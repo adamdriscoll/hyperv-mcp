@@ -1,7 +1,7 @@
-function hyperv_victim_run {
+function hyperv_unprivileged_run {
     <#
     .SYNOPSIS
-    Run an executable in a VM as the configured unprivileged victim account.
+    Run an executable in a VM as the configured unprivileged guest account.
     #>
     [CmdletBinding()]
     param(
@@ -24,7 +24,7 @@ function hyperv_victim_run {
     Assert-HyperVValue -Value $vm_name -Name 'vm_name'
     Assert-HyperVValue -Value $command -Name 'command'
     try {
-        $credential = New-HyperVGuestCredential -Victim
+        $credential = New-HyperVGuestCredential -Unprivileged
         $commandScript = New-HyperVCommandScript -Command $command -Args $args -Cwd $cwd
         $result = Invoke-HyperVGuestScriptInternal -VMName $vm_name -Script $commandScript -Credential $credential -TimeoutMs $timeout_ms
         ConvertTo-HyperVMcpJson -InputObject $result

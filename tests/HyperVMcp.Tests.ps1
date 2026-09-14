@@ -17,8 +17,8 @@ BeforeAll {
         'hyperv_guest_get'
         'hyperv_guest_read_file'
         'hyperv_guest_list_dir'
-        'hyperv_victim_run'
-        'hyperv_victim_run_ps'
+        'hyperv_unprivileged_run'
+        'hyperv_unprivileged_run_ps'
     )
     $modulePath = if ($env:HYPERV_MCP_MODULE_PATH) {
         $env:HYPERV_MCP_MODULE_PATH
@@ -87,6 +87,24 @@ Describe 'HyperVMcp module' {
         finally {
             $env:HYPERV_GUEST_USERNAME = $oldUsername
             $env:HYPERV_GUEST_PASSWORD = $oldPassword
+        }
+    }
+
+    It 'uses dedicated environment variables for the unprivileged guest identity' {
+        $oldUsername = $env:HYPERV_GUEST_UNPRIVILEGED_USERNAME
+        $oldPassword = $env:HYPERV_GUEST_UNPRIVILEGED_PASSWORD
+        try {
+            $env:HYPERV_GUEST_UNPRIVILEGED_USERNAME = $null
+            $env:HYPERV_GUEST_UNPRIVILEGED_PASSWORD = $null
+            $result = hyperv_unprivileged_run_ps -vm_name test -script 'Get-Date' | ConvertFrom-Json
+
+            $result.ok | Should -BeFalse
+            $result.error | Should -Match 'HYPERV_GUEST_UNPRIVILEGED_USERNAME'
+            $result.error | Should -Not -Match 'password='
+        }
+        finally {
+            $env:HYPERV_GUEST_UNPRIVILEGED_USERNAME = $oldUsername
+            $env:HYPERV_GUEST_UNPRIVILEGED_PASSWORD = $oldPassword
         }
     }
 }

@@ -28,13 +28,89 @@ Import-Module HyperVMcp
 hyperv_list_vms
 ```
 
-To host the commands with `multi-pwsh`, install a PowerShell runtime first.
-From a clone of this repository, run the included launcher:
+Install `multi-pwsh` and a PowerShell runtime:
 
 ```powershell
+irm https://github.com/Devolutions/multi-pwsh/releases/latest/download/install-multi-pwsh.ps1 | iex
 multi-pwsh install 7.4
+```
+
+### Expose all module commands
+
+The included launcher reads the exported command list from the installed
+module manifest and starts a stdio MCP server:
+
+```powershell
+Install-PSResource -Name HyperVMcp -Repository PSGallery
 .\Start-HyperVMcpServer.ps1
 ```
+
+The selected PowerShell version must be able to discover the installed
+`HyperVMcp` module. Choose another installed version when needed:
+
+```powershell
+.\Start-HyperVMcpServer.ps1 -PowerShellVersion 7.5
+```
+
+### Expose selected commands
+
+Pass command names after `-McpCommands` to expose only those tools:
+
+```powershell
+multi-pwsh host 7.4 -mcp -McpCommands hyperv_list_vms hyperv_get_vm_info hyperv_start_vm
+```
+
+`multi-pwsh` prefixes and normalizes the MCP tool names. The commands above
+are advertised as `powershell_hyperv_list_vms`,
+`powershell_hyperv_get_vm_info`, and `powershell_hyperv_start_vm`.
+
+### Configure an MCP client
+
+An MCP client can launch the included script as a stdio server. Replace the
+script path with the absolute path to your clone:
+
+```json
+{
+  "mcpServers": {
+    "hyperv": {
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "C:\\src\\hyperv-mcp\\Start-HyperVMcpServer.ps1",
+        "-PowerShellVersion",
+        "7.4"
+      ]
+    }
+  }
+}
+```
+
+Alternatively, configure `multi-pwsh` directly when only a small command
+surface is needed:
+
+```json
+{
+  "mcpServers": {
+    "hyperv": {
+      "command": "multi-pwsh",
+      "args": [
+        "host",
+        "7.4",
+        "-mcp",
+        "-McpCommands",
+        "hyperv_list_vms",
+        "hyperv_get_vm_info"
+      ]
+    }
+  }
+}
+```
+
+MCP mode exposes only the commands named after `-McpCommands`, uses stdio
+transport, and runs tools with the privileges of the user that starts the
+server.
 
 ## Credentials
 
@@ -46,11 +122,11 @@ HYPERV_GUEST_USERNAME
 HYPERV_GUEST_PASSWORD
 ```
 
-The `hyperv_victim_*` commands only use:
+The `hyperv_unprivileged_*` commands only use:
 
 ```text
-HYPERV_GUEST_VICTIM_USERNAME
-HYPERV_GUEST_VICTIM_PASSWORD
+HYPERV_GUEST_UNPRIVILEGED_USERNAME
+HYPERV_GUEST_UNPRIVILEGED_PASSWORD
 ```
 
 Set these variables in the MCP child-process environment or through a
@@ -79,8 +155,8 @@ or telemetry, so environment-based credential injection is preferred.
 | `hyperv_guest_get` | Copy a guest file to the host |
 | `hyperv_guest_read_file` | Read a bounded guest file as base64 |
 | `hyperv_guest_list_dir` | List a guest directory |
-| `hyperv_victim_run` | Run a guest executable as the victim identity |
-| `hyperv_victim_run_ps` | Run guest PowerShell as the victim identity |
+| `hyperv_unprivileged_run` | Run a guest executable as the unprivileged guest identity |
+| `hyperv_unprivileged_run_ps` | Run guest PowerShell as the unprivileged guest identity |
 
 ## Build and test
 
