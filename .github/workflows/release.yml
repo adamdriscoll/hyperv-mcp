@@ -1,0 +1,58 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    environment: powershell-gallery
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install build dependencies
+        shell: pwsh
+        run: Install-PSResource -Name Pester -Version 5.7.1 -TrustRepository
+
+      - name: Resolve release version
+        id: version
+        shell: pwsh
+        run: |
+          $version = '${{ github.ref_name }}' -replace '^v', ''
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+              throw "Tag '${{ github.ref_name }}' is not a stable semantic version."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build module
+        shell: pwsh
+        run: ./build.ps1 -Version '${{ steps.version.outputs.version }}'
+
+      - name: Run Pester
+        shell: pwsh
+        env:
+          HYPERV_MCP_MODULE_PATH: ${{ github.workspace }}\dist\HyperVMcp\HyperVMcp.psd1
+        run: |
+          $configuration = New-PesterConfiguration
+          $configuration.Run.Path = './tests'
+          $configuration.Run.Exit = $true
+          $configuration.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $configuration
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:PSGALLERY_API_KEY)) {
+              throw 'The PSGALLERY_API_KEY repository secret is not configured.'
+          }
+          Publish-PSResource `
+              -NupkgPath './dist/HyperVMcp.${{ steps.version.outputs.version }}.nupkg' `
+              -Repository PSGallery `
+              -ApiKey $env:PSGALLERY_API_KEY
