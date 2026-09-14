@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install test dependencies
+        shell: pwsh
+        run: Install-PSResource -Name Pester -Version 5.7.1 -TrustRepository
+
+      - name: Build module
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Run Pester
+        shell: pwsh
+        env:
+          HYPERV_MCP_MODULE_PATH: ${{ github.workspace }}\dist\HyperVMcp\HyperVMcp.psd1
+        run: |
+          $configuration = New-PesterConfiguration
+          $configuration.Run.Path = './tests'
+          $configuration.Run.Exit = $true
+          $configuration.Output.Verbosity = 'Detailed'
+          $configuration.TestResult.Enabled = $true
+          $configuration.TestResult.OutputPath = 'test-results.xml'
+          Invoke-Pester -Configuration $configuration
+
+      - name: Upload module artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: HyperVMcp
+          path: dist/HyperVMcp.*.nupkg
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: pester-results
+          path: test-results.xml
+          if-no-files-found: ignore

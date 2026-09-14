@@ -1,0 +1,39 @@
+function hyperv_get_vm_info {
+    <#
+    .SYNOPSIS
+    Get detailed configuration and runtime information for a Hyper-V VM.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string] $vm_name
+    )
+
+    Assert-HyperVValue -Value $vm_name -Name 'vm_name'
+    $vm = Get-VM -Name $vm_name -ErrorAction Stop
+    $comPorts = @(Get-VMComPort -VMName $vm_name -ErrorAction Stop | Select-Object Name, Path)
+    $networkAdapters = @(
+        Get-VMNetworkAdapter -VMName $vm_name -ErrorAction Stop |
+            Select-Object Name, SwitchName, MacAddress, IPAddresses
+    )
+    $hardDrives = @(
+        Get-VMHardDiskDrive -VMName $vm_name -ErrorAction Stop |
+            Select-Object ControllerType, Path
+    )
+    $checkpointCount = @(Get-VMSnapshot -VMName $vm_name -ErrorAction Stop).Count
+
+    ConvertTo-HyperVMcpJson -InputObject ([ordered]@{
+        name = $vm.Name
+        state = [string] $vm.State
+        status = $vm.Status
+        generation = $vm.Generation
+        memory_mb = [Math]::Round($vm.MemoryAssigned / 1MB, 1)
+        dynamic_memory = $vm.DynamicMemoryEnabled
+        cpu_count = $vm.ProcessorCount
+        uptime_seconds = $vm.Uptime.TotalSeconds
+        checkpoint_count = $checkpointCount
+        com_ports = $comPorts
+        network_adapters = $networkAdapters
+        hard_drives = $hardDrives
+    })
+}
