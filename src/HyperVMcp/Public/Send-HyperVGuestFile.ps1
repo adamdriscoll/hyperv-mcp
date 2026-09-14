@@ -1,4 +1,4 @@
-function hyperv_guest_put {
+function Send-HyperVGuestFile {
     <#
     .SYNOPSIS
     Copy a host file into a VM through PowerShell Direct.
@@ -6,37 +6,37 @@ function hyperv_guest_put {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name,
+        [string] $VMName,
 
         [Parameter(Mandatory)]
-        [string] $local_path,
+        [string] $LocalPath,
 
         [Parameter(Mandatory)]
-        [string] $remote_path,
+        [string] $RemotePath,
 
         [AllowEmptyString()]
-        [string] $username = '',
+        [string] $Username = '',
 
         [AllowEmptyString()]
-        [string] $password = ''
+        [string] $Password = ''
     )
 
     try {
-        Assert-HyperVValue -Value $vm_name -Name 'vm_name'
-        Assert-HyperVValue -Value $local_path -Name 'local_path'
-        Assert-HyperVValue -Value $remote_path -Name 'remote_path'
-        $credential = New-HyperVGuestCredential -Username $username -Password $password
-        $session = New-HyperVGuestSession -VMName $vm_name -Credential $credential -OperationTimeoutMs 300000
+        Assert-HyperVValue -Value $VMName -Name 'VMName'
+        Assert-HyperVValue -Value $LocalPath -Name 'LocalPath'
+        Assert-HyperVValue -Value $RemotePath -Name 'RemotePath'
+        $credential = New-HyperVGuestCredential -Username $Username -Password $Password
+        $session = New-HyperVGuestSession -VMName $VMName -Credential $credential -OperationTimeoutMs 300000
         try {
-            $remoteDirectory = [System.IO.Path]::GetDirectoryName($remote_path)
+            $remoteDirectory = [System.IO.Path]::GetDirectoryName($RemotePath)
             if (-not [string]::IsNullOrWhiteSpace($remoteDirectory)) {
                 Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
                     param($Directory)
                     New-Item -ItemType Directory -Path $Directory -Force | Out-Null
                 } -ArgumentList $remoteDirectory
             }
-            Copy-Item -ToSession $session -LiteralPath $local_path -Destination $remote_path -Force -ErrorAction Stop
-            $bytesCopied = (Get-Item -LiteralPath $local_path -ErrorAction Stop).Length
+            Copy-Item -ToSession $session -LiteralPath $LocalPath -Destination $RemotePath -Force -ErrorAction Stop
+            $bytesCopied = (Get-Item -LiteralPath $LocalPath -ErrorAction Stop).Length
         }
         finally {
             Remove-PSSession -Session $session -ErrorAction SilentlyContinue

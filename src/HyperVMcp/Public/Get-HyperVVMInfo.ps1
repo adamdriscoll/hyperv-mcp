@@ -1,4 +1,4 @@
-function hyperv_get_vm_info {
+function Get-HyperVVMInfo {
     <#
     .SYNOPSIS
     Get detailed configuration and runtime information for a Hyper-V VM.
@@ -6,21 +6,21 @@ function hyperv_get_vm_info {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name
+        [string] $VMName
     )
 
-    Assert-HyperVValue -Value $vm_name -Name 'vm_name'
-    $vm = Get-VM -Name $vm_name -ErrorAction Stop
-    $comPorts = @(Get-VMComPort -VMName $vm_name -ErrorAction Stop | Select-Object Name, Path)
+    Assert-HyperVValue -Value $VMName -Name 'VMName'
+    $vm = Get-VM -Name $VMName -ErrorAction Stop
+    $comPorts = @(Get-VMComPort -VMName $VMName -ErrorAction Stop | Select-Object Name, Path)
     $networkAdapters = @(
-        Get-VMNetworkAdapter -VMName $vm_name -ErrorAction Stop |
+        Get-VMNetworkAdapter -VMName $VMName -ErrorAction Stop |
             Select-Object Name, SwitchName, MacAddress, IPAddresses
     )
     $hardDrives = @(
-        Get-VMHardDiskDrive -VMName $vm_name -ErrorAction Stop |
+        Get-VMHardDiskDrive -VMName $VMName -ErrorAction Stop |
             Select-Object ControllerType, Path
     )
-    $checkpointCount = @(Get-VMSnapshot -VMName $vm_name -ErrorAction Stop).Count
+    $checkpointCount = @(Get-VMSnapshot -VMName $VMName -ErrorAction Stop).Count
 
     ConvertTo-HyperVMcpJson -InputObject ([ordered]@{
         name = $vm.Name

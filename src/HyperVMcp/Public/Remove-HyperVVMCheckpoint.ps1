@@ -1,4 +1,4 @@
-function hyperv_checkpoint_remove {
+function Remove-HyperVVMCheckpoint {
     <#
     .SYNOPSIS
     Remove a checkpoint, optionally including all child checkpoints.
@@ -6,29 +6,29 @@ function hyperv_checkpoint_remove {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name,
+        [string] $VMName,
 
         [Parameter(Mandatory)]
-        [string] $checkpoint_name,
+        [string] $CheckpointName,
 
-        [bool] $include_subtree = $false
+        [bool] $IncludeSubtree = $false
     )
 
-    Assert-HyperVValue -Value $vm_name -Name 'vm_name'
-    Assert-HyperVValue -Value $checkpoint_name -Name 'checkpoint_name'
+    Assert-HyperVValue -Value $VMName -Name 'VMName'
+    Assert-HyperVValue -Value $CheckpointName -Name 'CheckpointName'
     $parameters = @{
-        Name = $checkpoint_name
-        VMName = $vm_name
+        Name = $CheckpointName
+        VMName = $VMName
         Confirm = $false
         ErrorAction = 'Stop'
     }
-    if ($include_subtree) {
+    if ($IncludeSubtree) {
         $parameters.IncludeAllChildSnapshots = $true
     }
     Remove-VMSnapshot @parameters
     ConvertTo-HyperVMcpJson -InputObject ([ordered]@{
         status = 'removed'
-        vm_name = $vm_name
-        checkpoint_name = $checkpoint_name
+        vm_name = $VMName
+        checkpoint_name = $CheckpointName
     })
 }

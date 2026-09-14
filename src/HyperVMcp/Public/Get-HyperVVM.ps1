@@ -1,4 +1,4 @@
-function hyperv_list_vms {
+function Get-HyperVVM {
     <#
     .SYNOPSIS
     List all Hyper-V virtual machines and their current state.

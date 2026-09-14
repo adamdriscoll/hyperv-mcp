@@ -1,4 +1,4 @@
-function hyperv_checkpoint_list {
+function Get-HyperVVMCheckpoint {
     <#
     .SYNOPSIS
     List all checkpoints for a Hyper-V virtual machine.
@@ -6,12 +6,12 @@ function hyperv_checkpoint_list {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name
+        [string] $VMName
     )
 
-    Assert-HyperVValue -Value $vm_name -Name 'vm_name'
+    Assert-HyperVValue -Value $VMName -Name 'VMName'
     $checkpoints = @(
-        Get-VMSnapshot -VMName $vm_name -ErrorAction Stop | ForEach-Object {
+        Get-VMSnapshot -VMName $VMName -ErrorAction Stop | ForEach-Object {
             [ordered]@{
                 name = $_.Name
                 type = [string] $_.SnapshotType

@@ -1,4 +1,4 @@
-function hyperv_guest_read_file {
+function Get-HyperVGuestFileContent {
     <#
     .SYNOPSIS
     Read a bounded file from a VM and return its bytes as base64.
@@ -6,26 +6,26 @@ function hyperv_guest_read_file {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name,
+        [string] $VMName,
 
         [Parameter(Mandatory)]
-        [string] $remote_path,
+        [string] $RemotePath,
 
         [ValidateRange(1, 2147483647)]
-        [int] $max_bytes = 262144,
+        [int] $MaxBytes = 262144,
 
         [AllowEmptyString()]
-        [string] $username = '',
+        [string] $Username = '',
 
         [AllowEmptyString()]
-        [string] $password = ''
+        [string] $Password = ''
     )
 
     try {
-        Assert-HyperVValue -Value $vm_name -Name 'vm_name'
-        Assert-HyperVValue -Value $remote_path -Name 'remote_path'
-        $credential = New-HyperVGuestCredential -Username $username -Password $password
-        $session = New-HyperVGuestSession -VMName $vm_name -Credential $credential
+        Assert-HyperVValue -Value $VMName -Name 'VMName'
+        Assert-HyperVValue -Value $RemotePath -Name 'RemotePath'
+        $credential = New-HyperVGuestCredential -Username $Username -Password $Password
+        $session = New-HyperVGuestSession -VMName $VMName -Credential $credential
         try {
             $result = Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
                 param($Path, $MaximumBytes)
@@ -39,7 +39,7 @@ function hyperv_guest_read_file {
                     bytes_read = $bytes.Length
                     truncated = $truncated
                 }
-            } -ArgumentList $remote_path, $max_bytes
+            } -ArgumentList $RemotePath, $MaxBytes
         }
         finally {
             Remove-PSSession -Session $session -ErrorAction SilentlyContinue

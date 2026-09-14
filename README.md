@@ -8,8 +8,8 @@ guest execution, file transfer, and a separate unprivileged guest identity.
 
 The commands return compact JSON so their result shapes remain stable when
 they are exposed through a text-based MCP bridge. With `multi-pwsh`, command
-names are prefixed with `powershell_`; for example, `hyperv_list_vms` is
-advertised as `powershell_hyperv_list_vms`.
+names are prefixed with `powershell_`; for example, `Get-HyperVVM` is
+advertised as `powershell_get_hypervvm`.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ advertised as `powershell_hyperv_list_vms`.
 ```powershell
 Install-PSResource -Name HyperVMcp -Repository PSGallery
 Import-Module HyperVMcp
-hyperv_list_vms
+Get-HyperVVM
 ```
 
 Install `multi-pwsh` and a PowerShell runtime:
@@ -57,12 +57,12 @@ The selected PowerShell version must be able to discover the installed
 Pass command names after `-McpCommands` to expose only those tools:
 
 ```powershell
-multi-pwsh host 7.4 -mcp -McpCommands hyperv_list_vms hyperv_get_vm_info hyperv_start_vm
+multi-pwsh host 7.4 -mcp -McpCommands Get-HyperVVM Get-HyperVVMInfo Start-HyperVVM
 ```
 
 `multi-pwsh` prefixes and normalizes the MCP tool names. The commands above
-are advertised as `powershell_hyperv_list_vms`,
-`powershell_hyperv_get_vm_info`, and `powershell_hyperv_start_vm`.
+are advertised as `powershell_get_hypervvm`,
+`powershell_get_hypervvminfo`, and `powershell_start_hypervvm`.
 
 ### Configure an MCP client
 
@@ -100,8 +100,8 @@ surface is needed:
         "7.4",
         "-mcp",
         "-McpCommands",
-        "hyperv_list_vms",
-        "hyperv_get_vm_info"
+        "Get-HyperVVM",
+        "Get-HyperVVMInfo"
       ]
     }
   }
@@ -114,7 +114,7 @@ server.
 
 ## Credentials
 
-Guest operations resolve credentials from explicit `username` and `password`
+Guest operations resolve credentials from explicit `Username` and `Password`
 arguments first, then from these environment variables:
 
 ```text
@@ -122,7 +122,7 @@ HYPERV_GUEST_USERNAME
 HYPERV_GUEST_PASSWORD
 ```
 
-The `hyperv_unprivileged_*` commands only use:
+The `Invoke-HyperVUnprivilegedGuest*` commands only use:
 
 ```text
 HYPERV_GUEST_UNPRIVILEGED_USERNAME
@@ -138,25 +138,25 @@ or telemetry, so environment-based credential injection is preferred.
 
 | Command | Purpose |
 |---|---|
-| `hyperv_list_vms` | List VMs and current state |
-| `hyperv_get_vm_info` | Get detailed VM configuration |
-| `hyperv_start_vm` | Start a VM |
-| `hyperv_stop_vm` | Gracefully stop, save, or turn off a VM |
-| `hyperv_reset_vm` | Hard-reset a VM |
-| `hyperv_checkpoint_create` | Create a checkpoint |
-| `hyperv_checkpoint_list` | List checkpoints |
-| `hyperv_checkpoint_restore` | Restore a checkpoint |
-| `hyperv_checkpoint_remove` | Delete a checkpoint |
-| `hyperv_configure_kdnet` | Configure KDNET in a guest |
-| `hyperv_configure_kdcom` | Configure named-pipe serial debugging |
-| `hyperv_guest_run` | Run a guest executable |
-| `hyperv_guest_run_ps` | Run guest PowerShell |
-| `hyperv_guest_put` | Copy a host file into a guest |
-| `hyperv_guest_get` | Copy a guest file to the host |
-| `hyperv_guest_read_file` | Read a bounded guest file as base64 |
-| `hyperv_guest_list_dir` | List a guest directory |
-| `hyperv_unprivileged_run` | Run a guest executable as the unprivileged guest identity |
-| `hyperv_unprivileged_run_ps` | Run guest PowerShell as the unprivileged guest identity |
+| `Get-HyperVVM` | List VMs and current state |
+| `Get-HyperVVMInfo` | Get detailed VM configuration |
+| `Start-HyperVVM` | Start a VM |
+| `Stop-HyperVVM` | Gracefully stop, save, or turn off a VM |
+| `Restart-HyperVVM` | Hard-reset a VM |
+| `New-HyperVVMCheckpoint` | Create a checkpoint |
+| `Get-HyperVVMCheckpoint` | List checkpoints |
+| `Restore-HyperVVMCheckpoint` | Restore a checkpoint |
+| `Remove-HyperVVMCheckpoint` | Delete a checkpoint |
+| `Set-HyperVGuestKDNet` | Configure KDNET in a guest |
+| `Set-HyperVGuestKDCom` | Configure named-pipe serial debugging |
+| `Invoke-HyperVGuestCommand` | Run a guest executable |
+| `Invoke-HyperVGuestPowerShell` | Run guest PowerShell |
+| `Send-HyperVGuestFile` | Copy a host file into a guest |
+| `Receive-HyperVGuestFile` | Copy a guest file to the host |
+| `Get-HyperVGuestFileContent` | Read a bounded guest file as base64 |
+| `Get-HyperVGuestChildItem` | List a guest directory |
+| `Invoke-HyperVUnprivilegedGuestCommand` | Run a guest executable as the unprivileged guest identity |
+| `Invoke-HyperVUnprivilegedGuestPowerShell` | Run guest PowerShell as the unprivileged guest identity |
 
 ## Build and test
 
