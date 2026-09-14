@@ -24,8 +24,8 @@
         'hyperv_guest_get'
         'hyperv_guest_read_file'
         'hyperv_guest_list_dir'
-        'hyperv_victim_run'
-        'hyperv_victim_run_ps'
+        'hyperv_unprivileged_run'
+        'hyperv_unprivileged_run_ps'
     )
     CmdletsToExport = @()
     VariablesToExport = @()

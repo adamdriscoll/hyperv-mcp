@@ -6,14 +6,14 @@ function New-HyperVGuestCredential {
         [AllowEmptyString()]
         [string] $Password = '',
 
-        [switch] $Victim
+        [switch] $Unprivileged
     )
 
-    if ($Victim) {
-        $Username = $env:HYPERV_GUEST_VICTIM_USERNAME
-        $Password = $env:HYPERV_GUEST_VICTIM_PASSWORD
+    if ($Unprivileged) {
+        $Username = $env:HYPERV_GUEST_UNPRIVILEGED_USERNAME
+        $Password = $env:HYPERV_GUEST_UNPRIVILEGED_PASSWORD
         if ([string]::IsNullOrWhiteSpace($Username) -or [string]::IsNullOrWhiteSpace($Password)) {
-            throw 'No victim credential configured. Set HYPERV_GUEST_VICTIM_USERNAME and HYPERV_GUEST_VICTIM_PASSWORD environment variables to an unprivileged guest account.'
+            throw 'No unprivileged guest credential configured. Set HYPERV_GUEST_UNPRIVILEGED_USERNAME and HYPERV_GUEST_UNPRIVILEGED_PASSWORD environment variables.'
         }
     }
     else {
