@@ -1,24 +1,24 @@
 BeforeAll {
     $expectedCommands = @(
-        'hyperv_list_vms'
-        'hyperv_get_vm_info'
-        'hyperv_start_vm'
-        'hyperv_stop_vm'
-        'hyperv_reset_vm'
-        'hyperv_checkpoint_create'
-        'hyperv_checkpoint_list'
-        'hyperv_checkpoint_restore'
-        'hyperv_checkpoint_remove'
-        'hyperv_configure_kdnet'
-        'hyperv_configure_kdcom'
-        'hyperv_guest_run'
-        'hyperv_guest_run_ps'
-        'hyperv_guest_put'
-        'hyperv_guest_get'
-        'hyperv_guest_read_file'
-        'hyperv_guest_list_dir'
-        'hyperv_unprivileged_run'
-        'hyperv_unprivileged_run_ps'
+        'Get-HyperVVM'
+        'Get-HyperVVMInfo'
+        'Start-HyperVVM'
+        'Stop-HyperVVM'
+        'Restart-HyperVVM'
+        'New-HyperVVMCheckpoint'
+        'Get-HyperVVMCheckpoint'
+        'Restore-HyperVVMCheckpoint'
+        'Remove-HyperVVMCheckpoint'
+        'Set-HyperVGuestKDNet'
+        'Set-HyperVGuestKDCom'
+        'Invoke-HyperVGuestCommand'
+        'Invoke-HyperVGuestPowerShell'
+        'Send-HyperVGuestFile'
+        'Receive-HyperVGuestFile'
+        'Get-HyperVGuestFileContent'
+        'Get-HyperVGuestChildItem'
+        'Invoke-HyperVUnprivilegedGuestCommand'
+        'Invoke-HyperVUnprivilegedGuestPowerShell'
     )
     $modulePath = if ($env:HYPERV_MCP_MODULE_PATH) {
         $env:HYPERV_MCP_MODULE_PATH
@@ -52,24 +52,24 @@ Describe 'HyperVMcp module' {
     }
 
     It 'keeps reference defaults in command metadata' {
-        (Get-Command hyperv_stop_vm).Parameters.method.Attributes.ValidValues |
+        (Get-Command Stop-HyperVVM).Parameters.Method.Attributes.ValidValues |
             Should -Be @('shutdown', 'save', 'turnoff')
-        (Get-Command hyperv_configure_kdnet).Parameters.port.Attributes.MinRange |
+        (Get-Command Set-HyperVGuestKDNet).Parameters.Port.Attributes.MinRange |
             Should -Be 1024
-        (Get-Command hyperv_configure_kdnet).Parameters.port.Attributes.MaxRange |
+        (Get-Command Set-HyperVGuestKDNet).Parameters.Port.Attributes.MaxRange |
             Should -Be 65535
-        (Get-Command hyperv_configure_kdcom).Parameters.com_port.Attributes.ValidValues |
+        (Get-Command Set-HyperVGuestKDCom).Parameters.COMPort.Attributes.ValidValues |
             Should -Be @(1, 2)
     }
 
     It 'requires the core reference parameters' {
-        (Get-Command hyperv_get_vm_info).Parameters.vm_name.Attributes.Mandatory |
+        (Get-Command Get-HyperVVMInfo).Parameters.VMName.Attributes.Mandatory |
             Should -BeTrue
-        (Get-Command hyperv_checkpoint_restore).Parameters.checkpoint_name.Attributes.Mandatory |
+        (Get-Command Restore-HyperVVMCheckpoint).Parameters.CheckpointName.Attributes.Mandatory |
             Should -BeTrue
-        (Get-Command hyperv_guest_run).Parameters.command.Attributes.Mandatory |
+        (Get-Command Invoke-HyperVGuestCommand).Parameters.Command.Attributes.Mandatory |
             Should -BeTrue
-        (Get-Command hyperv_guest_run_ps).Parameters.script.Attributes.Mandatory |
+        (Get-Command Invoke-HyperVGuestPowerShell).Parameters.Script.Attributes.Mandatory |
             Should -BeTrue
     }
 
@@ -79,7 +79,7 @@ Describe 'HyperVMcp module' {
         try {
             $env:HYPERV_GUEST_USERNAME = $null
             $env:HYPERV_GUEST_PASSWORD = $null
-            $result = hyperv_guest_run_ps -vm_name test -script 'Get-Date' | ConvertFrom-Json
+            $result = Invoke-HyperVGuestPowerShell -VMName test -Script 'Get-Date' | ConvertFrom-Json
 
             $result.ok | Should -BeFalse
             $result.error | Should -Match 'Guest credentials are required'
@@ -96,7 +96,7 @@ Describe 'HyperVMcp module' {
         try {
             $env:HYPERV_GUEST_UNPRIVILEGED_USERNAME = $null
             $env:HYPERV_GUEST_UNPRIVILEGED_PASSWORD = $null
-            $result = hyperv_unprivileged_run_ps -vm_name test -script 'Get-Date' | ConvertFrom-Json
+            $result = Invoke-HyperVUnprivilegedGuestPowerShell -VMName test -Script 'Get-Date' | ConvertFrom-Json
 
             $result.ok | Should -BeFalse
             $result.error | Should -Match 'HYPERV_GUEST_UNPRIVILEGED_USERNAME'

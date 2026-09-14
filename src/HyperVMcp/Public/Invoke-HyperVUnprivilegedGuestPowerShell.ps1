@@ -1,4 +1,4 @@
-function hyperv_unprivileged_run_ps {
+function Invoke-HyperVUnprivilegedGuestPowerShell {
     <#
     .SYNOPSIS
     Run PowerShell in a VM as the configured unprivileged guest account.
@@ -6,20 +6,20 @@ function hyperv_unprivileged_run_ps {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name,
+        [string] $VMName,
 
         [Parameter(Mandatory)]
-        [string] $script,
+        [string] $Script,
 
         [ValidateRange(1, 2147483647)]
-        [int] $timeout_ms = 60000
+        [int] $TimeoutMilliseconds = 60000
     )
 
-    Assert-HyperVValue -Value $vm_name -Name 'vm_name'
-    Assert-HyperVValue -Value $script -Name 'script'
+    Assert-HyperVValue -Value $VMName -Name 'VMName'
+    Assert-HyperVValue -Value $Script -Name 'script'
     try {
         $credential = New-HyperVGuestCredential -Unprivileged
-        $result = Invoke-HyperVGuestScriptInternal -VMName $vm_name -Script $script -Credential $credential -TimeoutMs $timeout_ms
+        $result = Invoke-HyperVGuestScriptInternal -VMName $VMName -Script $Script -Credential $credential -TimeoutMs $TimeoutMilliseconds
         ConvertTo-HyperVMcpJson -InputObject $result
     }
     catch {

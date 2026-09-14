@@ -1,4 +1,4 @@
-function hyperv_guest_list_dir {
+function Get-HyperVGuestChildItem {
     <#
     .SYNOPSIS
     List entries in a VM directory through PowerShell Direct.
@@ -6,23 +6,23 @@ function hyperv_guest_list_dir {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string] $vm_name,
+        [string] $VMName,
 
         [Parameter(Mandatory)]
-        [string] $remote_path,
+        [string] $RemotePath,
 
         [AllowEmptyString()]
-        [string] $username = '',
+        [string] $Username = '',
 
         [AllowEmptyString()]
-        [string] $password = ''
+        [string] $Password = ''
     )
 
     try {
-        Assert-HyperVValue -Value $vm_name -Name 'vm_name'
-        Assert-HyperVValue -Value $remote_path -Name 'remote_path'
-        $credential = New-HyperVGuestCredential -Username $username -Password $password
-        $session = New-HyperVGuestSession -VMName $vm_name -Credential $credential -OperationTimeoutMs 60000
+        Assert-HyperVValue -Value $VMName -Name 'VMName'
+        Assert-HyperVValue -Value $RemotePath -Name 'RemotePath'
+        $credential = New-HyperVGuestCredential -Username $Username -Password $Password
+        $session = New-HyperVGuestSession -VMName $VMName -Credential $credential -OperationTimeoutMs 60000
         try {
             $entries = @(
                 Invoke-Command -Session $session -ErrorAction Stop -ScriptBlock {
@@ -35,7 +35,7 @@ function hyperv_guest_list_dir {
                             modified = $_.LastWriteTimeUtc.ToString('yyyy-MM-ddTHH:mm:ssZ')
                         }
                     }
-                } -ArgumentList $remote_path
+                } -ArgumentList $RemotePath
             )
         }
         finally {
